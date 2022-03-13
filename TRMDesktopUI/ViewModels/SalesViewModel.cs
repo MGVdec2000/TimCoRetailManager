@@ -43,7 +43,21 @@ namespace TRMDesktopUI.ViewModels
             }
         }
 
-        private int _itemQuantity;
+        private ProductModel _selectedProduct;
+
+        public ProductModel SelectedProduct
+        {
+            get { return _selectedProduct; }
+            set
+            {
+                _selectedProduct = value;
+                NotifyOfPropertyChange(() => SelectedProduct);
+                NotifyOfPropertyChange(() => CanAddToCart);
+            }
+        }
+
+
+        private int _itemQuantity = 1;
 
         public int ItemQuantity
         {
@@ -52,6 +66,7 @@ namespace TRMDesktopUI.ViewModels
             {
                 _itemQuantity = value;
                 NotifyOfPropertyChange(() => ItemQuantity);
+                NotifyOfPropertyChange(() => CanAddToCart);
             }
         }
 
@@ -62,15 +77,39 @@ namespace TRMDesktopUI.ViewModels
                 bool output = false;
 
                 // Make sure item is selected
-
                 // Make sure quantity is != 0
+                // Make sure quantity on hand is greater than or equal to desired quantity
+                if (ItemQuantity > 0 && SelectedProduct?.QtyInStock >= ItemQuantity)
+                {
+                    output = true;
+                }
 
                 return output;
             }
         }
         public void AddToCart()
         {
+            CartItemModel existingItem = Cart.FirstOrDefault(x => x.Product == SelectedProduct);
+            if (existingItem != null)
+            {
+                existingItem.QtyInCart += ItemQuantity;
 
+                // HACK: Seems like there should be a better way
+                Cart.Remove(existingItem);
+                Cart.Add(existingItem);
+
+            }
+            else
+            {
+                Cart.Add(new CartItemModel()
+                {
+                    Product = SelectedProduct,
+                    QtyInCart = ItemQuantity,
+                });
+            }
+            SelectedProduct.QtyInStock -= ItemQuantity;
+            ItemQuantity = 1;
+            NotifyOfPropertyChange(() => SubTotal);
         }
 
         public bool CanRemoveFromCart
@@ -79,21 +118,20 @@ namespace TRMDesktopUI.ViewModels
             {
                 bool output = false;
 
-                // Make sure item is selected
-
-                // Make sure quantity is != 0
+                // Make sure CartItem is selected
+                // Update SelecteItem QtyInStock
 
                 return output;
             }
         }
         public void RemoveFromCart()
         {
-
+            NotifyOfPropertyChange(() => SubTotal);
         }
 
-        private BindingList<string> _cart;
+        private BindingList<CartItemModel> _cart = new BindingList<CartItemModel>();
 
-        public BindingList<string> Cart
+        public BindingList<CartItemModel> Cart
         {
             get { return _cart; }
             set
@@ -107,8 +145,12 @@ namespace TRMDesktopUI.ViewModels
         {
             get
             {
-                // TODO: Replace with Calcuation
-                return "$0.00";
+                decimal subtotal = 0;
+                foreach (CartItemModel item in Cart)
+                {
+                    subtotal += item.Product.RetailPrice * item.QtyInCart;
+                }
+                return subtotal.ToString("C");
             }
         }
 
