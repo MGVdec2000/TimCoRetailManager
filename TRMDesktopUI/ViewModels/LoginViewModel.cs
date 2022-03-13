@@ -4,16 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TRMDesktopUI.EventModels;
 using TRMDesktopUI.Library.Api;
 
 namespace TRMDesktopUI.ViewModels
 {
     public class LoginViewModel : Screen
     {
-        private string _userName;
-
-        private IAPIHelper _apiHelper;
-
+        private string _userName = "MGVdec2000@gmail.com";
         public string UserName
         {
             get { return _userName; }
@@ -25,8 +23,7 @@ namespace TRMDesktopUI.ViewModels
             }
         }
 
-        private string _password;
-
+        private string _password = "Password1234.";
         public string Password
         {
             get { return _password; }
@@ -65,7 +62,6 @@ namespace TRMDesktopUI.ViewModels
         }
 
         private string _errorMessage;
-
         public string ErrorMessage
         {
             get { return _errorMessage; }
@@ -77,9 +73,13 @@ namespace TRMDesktopUI.ViewModels
             }
         }
 
-        public LoginViewModel(IAPIHelper apiHelper)
+        private IAPIHelper _apiHelper;
+        public IEventAggregator _events;
+
+        public LoginViewModel(IAPIHelper apiHelper, IEventAggregator events)
         {
             _apiHelper = apiHelper;
+            _events = events;
         }
 
         public async Task LogIn()
@@ -91,6 +91,9 @@ namespace TRMDesktopUI.ViewModels
 
                 // Capture more information about the user
                 await _apiHelper.GetLoggedInUseInfo(result.Access_Token);
+
+                // Broadcast successful login event
+                _events.PublishOnUIThread(new LogOnEvent());
             }
             catch (Exception Ex)
             {
