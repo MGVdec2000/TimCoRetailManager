@@ -5,6 +5,7 @@
 	[Description] NVARCHAR(MAX) NOT NULL,
 	[RetailPrice] MONEY NOT NULL,
 	[QtyInStock] INT NOT NULL DEFAULT 1,
+	[IsTaxable] BIT NOT NULL DEFAULT 1,
 	[CreateDate] DATETIME2(7) NOT NULL DEFAULT getutcdate(),
 	[LastModified] DATETIME2(7) NOT NULL DEFAULT getutcdate(),
 )

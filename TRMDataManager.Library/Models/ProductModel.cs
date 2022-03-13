@@ -15,6 +15,7 @@ namespace TRMDataManager.Library.Models
         public int QtyInStock { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime LastModified { get; set; }
+        public bool IsTaxable { get; set; }
 
     }
 }

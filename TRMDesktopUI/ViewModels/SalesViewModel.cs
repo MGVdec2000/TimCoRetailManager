@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TRMDesktopUI.Library.Api;
+using TRMDesktopUI.Library.Helpers;
 using TRMDesktopUI.Library.Models;
 
 namespace TRMDesktopUI.ViewModels
@@ -13,10 +14,13 @@ namespace TRMDesktopUI.ViewModels
     public class SalesViewModel : Screen
     {
         IProductEndpoint _productEndpoint;
+        IConfigHelper _configHelper;
 
-        public SalesViewModel(IProductEndpoint productEnpoint)
+        public SalesViewModel(IProductEndpoint productEnpoint, IConfigHelper configHelper)
         {
             _productEndpoint = productEnpoint;
+            _configHelper = configHelper;
+            _taxRate = _configHelper.GetTaxRate() / 100;
         }
 
         protected override async void OnViewLoaded(object view)
@@ -110,6 +114,8 @@ namespace TRMDesktopUI.ViewModels
             SelectedProduct.QtyInStock -= ItemQuantity;
             ItemQuantity = 1;
             NotifyOfPropertyChange(() => SubTotal);
+            NotifyOfPropertyChange(() => Tax);
+            NotifyOfPropertyChange(() => Total);
         }
 
         public bool CanRemoveFromCart
@@ -127,6 +133,8 @@ namespace TRMDesktopUI.ViewModels
         public void RemoveFromCart()
         {
             NotifyOfPropertyChange(() => SubTotal);
+            NotifyOfPropertyChange(() => Tax);
+            NotifyOfPropertyChange(() => Total);
         }
 
         private BindingList<CartItemModel> _cart = new BindingList<CartItemModel>();
@@ -141,34 +149,48 @@ namespace TRMDesktopUI.ViewModels
             }
         }
 
+        decimal _taxRate;
+        private void CalculateSubTotal()
+        {
+
+                _subtotal = 0;
+                _tax = 0;
+                foreach (CartItemModel item in Cart)
+                {
+                    _subtotal += item.Product.RetailPrice * item.QtyInCart;
+                    if (item.Product.IsTaxable)
+                    {
+                        _tax += item.Product.RetailPrice * (decimal)_taxRate;
+                    }
+                }
+                _total = _subtotal + Math.Round(_tax,2);
+        }
+
+        private decimal _subtotal = 0;
         public string SubTotal
         {
             get
             {
-                decimal subtotal = 0;
-                foreach (CartItemModel item in Cart)
-                {
-                    subtotal += item.Product.RetailPrice * item.QtyInCart;
-                }
-                return subtotal.ToString("C");
+                CalculateSubTotal();
+                return _subtotal.ToString("C");
             }
         }
 
+        private decimal _tax = 0;
         public string Tax
         {
             get
             {
-                // TODO: Replace with Calcuation
-                return "$0.00";
+                return _tax.ToString("C");
             }
         }
 
+        public decimal _total = 0;
         public string Total
         {
             get
             {
-                // TODO: Replace with Calcuation
-                return "$0.00";
+                return _total.ToString("C");
             }
         }
 
