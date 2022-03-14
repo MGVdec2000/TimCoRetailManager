@@ -5,5 +5,6 @@
 	[SaleDate] DATETIME2(7) NOT NULL DEFAULT getutcdate(),
 	[SubTotal] MONEY NOT NULL,
 	[Tax] MONEY NOT NULL,
-	[Total] MONEY NOT NULL,
+	[Total] MONEY NOT NULL, 
+    CONSTRAINT [FK_Sales_ToUsers] FOREIGN KEY (CashierId) REFERENCES Users(Id), 
 )
