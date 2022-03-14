@@ -152,18 +152,17 @@ namespace TRMDesktopUI.ViewModels
         decimal _taxRate;
         private void CalculateSubTotal()
         {
-
-                _subtotal = 0;
-                _tax = 0;
-                foreach (CartItemModel item in Cart)
+            _subtotal = 0;
+            _tax = 0;
+            foreach (CartItemModel item in Cart)
+            {
+                _subtotal += item.Product.RetailPrice * item.QtyInCart;
+                if (item.Product.IsTaxable)
                 {
-                    _subtotal += item.Product.RetailPrice * item.QtyInCart;
-                    if (item.Product.IsTaxable)
-                    {
-                        _tax += item.Product.RetailPrice * (decimal)_taxRate;
-                    }
+                    _tax += item.Product.RetailPrice * (decimal)_taxRate;
                 }
-                _total = _subtotal + Math.Round(_tax,2);
+            }
+            _total = _subtotal + Math.Round(_tax, 2);
         }
 
         private decimal _subtotal = 0;
