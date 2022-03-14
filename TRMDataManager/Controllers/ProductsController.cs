@@ -20,5 +20,11 @@ namespace TRMDataManager.Controllers
             
             return data.GetProducts();
         }
+
+        [HttpPost]
+        public void Checkout()
+        {
+
+        }
     }
 }

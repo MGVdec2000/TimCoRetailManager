@@ -15,11 +15,13 @@ namespace TRMDesktopUI.ViewModels
     {
         IProductEndpoint _productEndpoint;
         IConfigHelper _configHelper;
+        ISaleEndpoint _saleEndpoint;
 
-        public SalesViewModel(IProductEndpoint productEnpoint, IConfigHelper configHelper)
+        public SalesViewModel(IProductEndpoint productEnpoint, IConfigHelper configHelper, ISaleEndpoint saleEndpoint)
         {
             _productEndpoint = productEnpoint;
             _configHelper = configHelper;
+            _saleEndpoint = saleEndpoint;
             _taxRate = _configHelper.GetTaxRate() / 100;
         }
 
@@ -116,6 +118,7 @@ namespace TRMDesktopUI.ViewModels
             NotifyOfPropertyChange(() => SubTotal);
             NotifyOfPropertyChange(() => Tax);
             NotifyOfPropertyChange(() => Total);
+            NotifyOfPropertyChange(() => CanCheckout);
         }
 
         public bool CanRemoveFromCart
@@ -127,6 +130,7 @@ namespace TRMDesktopUI.ViewModels
                 // Make sure CartItem is selected
                 // Update SelecteItem QtyInStock
 
+
                 return output;
             }
         }
@@ -135,6 +139,7 @@ namespace TRMDesktopUI.ViewModels
             NotifyOfPropertyChange(() => SubTotal);
             NotifyOfPropertyChange(() => Tax);
             NotifyOfPropertyChange(() => Total);
+            NotifyOfPropertyChange(() => CanCheckout);
         }
 
         private BindingList<CartItemModel> _cart = new BindingList<CartItemModel>();
@@ -200,13 +205,29 @@ namespace TRMDesktopUI.ViewModels
                 bool output = false;
 
                 // Make sure cart is not empty
+                if (Cart.Count > 0)
+                {
+                    output = true;
+                }
 
                 return output;
             }
         }
-        public void Checkout()
+        public async Task Checkout()
         {
+            // Create SaleModel and post to API
+            SaleModel saleModel = new SaleModel();
+            foreach (CartItemModel cartItem in Cart)
+            {
+                saleModel.SaleDetails.Add(
+                    new SaleDetailModel()
+                        {
+                            ProductId = cartItem.Product.Id,
+                            QtyInCart = cartItem.QtyInCart
+                        });
+            }
 
+            await _saleEndpoint.PostSale(saleModel);
         }
 
     }

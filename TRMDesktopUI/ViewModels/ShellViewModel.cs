@@ -10,6 +10,7 @@ namespace TRMDesktopUI.ViewModels
 {
     public class ShellViewModel : Conductor<object>, IHandle<LogOnEvent>
     {
+
         private IEventAggregator _events;
         private SalesViewModel _salesVM;
         private SimpleContainer _container;
