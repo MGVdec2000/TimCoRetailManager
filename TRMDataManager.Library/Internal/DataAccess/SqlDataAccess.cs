@@ -36,5 +36,16 @@ namespace TRMDataManager.Library.Internal.DataAccess
                 cnn.Execute(storedProcedure, parameters, commandType: CommandType.StoredProcedure);
             }
         }
+
+        public int SaveDataReturnId<T>(string storedProcedure, T parameters, string connectionStringName)
+        {
+            int returnId = 0;
+            string connectionString = GetConnectionString(connectionStringName);
+            using (IDbConnection cnn = new SqlConnection(connectionString))
+            {
+                returnId = cnn.ExecuteScalar<int>(storedProcedure, parameters, commandType: CommandType.StoredProcedure);
+            }
+            return returnId;
+        }
     }
 }
