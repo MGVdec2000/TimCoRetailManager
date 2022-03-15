@@ -74,7 +74,8 @@
         <!-- Column 4 -->
         <TextBlock Grid.Row="2" Grid.Column="4">Cart</TextBlock>
         <ListBox x:Name="Cart" Grid.Row="3" Grid.Column="4" Grid.RowSpan="3"
-                 MinHeight="200" MinWidth="150" MaxWidth="225">
+                 MinHeight="200" MinWidth="150" MaxWidth="225"
+                 SelectedItem="{Binding SelectedCartItem}" >
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding DisplayText}" />

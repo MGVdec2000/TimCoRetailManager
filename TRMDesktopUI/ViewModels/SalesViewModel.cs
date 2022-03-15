@@ -68,6 +68,18 @@ namespace TRMDesktopUI.ViewModels
             }
         }
 
+        private CartItemDisplayModel _selectedCartItem;
+
+        public CartItemDisplayModel SelectedCartItem
+        {
+            get { return _selectedCartItem; }
+            set
+            {
+                _selectedCartItem = value;
+                NotifyOfPropertyChange(() => SelectedCartItem);
+                NotifyOfPropertyChange(() => CanRemoveFromCart);
+            }
+        }
 
         private int _itemQuantity = 1;
 
@@ -126,17 +138,21 @@ namespace TRMDesktopUI.ViewModels
         {
             get
             {
-                bool output = false;
-
-                // Make sure CartItem is selected
-                // Update SelecteItem QtyInStock
-
-
-                return output;
+                return SelectedCartItem?.QtyInCart > 0;
             }
         }
         public void RemoveFromCart()
         {
+            SelectedCartItem.Product.QtyInStock += 1;
+            if (SelectedCartItem.QtyInCart > 1)
+            {
+                SelectedCartItem.QtyInCart -= 1;
+            }
+            else
+            {
+                Cart.Remove(SelectedCartItem);
+            }
+
             NotifyOfPropertyChange(() => SubTotal);
             NotifyOfPropertyChange(() => Tax);
             NotifyOfPropertyChange(() => Total);
@@ -222,10 +238,10 @@ namespace TRMDesktopUI.ViewModels
             {
                 saleModel.SaleDetails.Add(
                     new SaleDetailModel()
-                        {
-                            ProductId = cartItem.Product.Id,
-                            QtyInCart = cartItem.QtyInCart
-                        });
+                    {
+                        ProductId = cartItem.Product.Id,
+                        QtyInCart = cartItem.QtyInCart
+                    });
             }
 
             await _saleEndpoint.PostSale(saleModel);
