@@ -76,6 +76,7 @@ namespace TRMDesktopUI.ViewModels
             set
             {
                 _selectedCartItem = value;
+                _selectedProduct = null;
                 NotifyOfPropertyChange(() => SelectedCartItem);
                 NotifyOfPropertyChange(() => CanRemoveFromCart);
             }
@@ -157,9 +158,22 @@ namespace TRMDesktopUI.ViewModels
             NotifyOfPropertyChange(() => Tax);
             NotifyOfPropertyChange(() => Total);
             NotifyOfPropertyChange(() => CanCheckout);
+            NotifyOfPropertyChange(() => CanAddToCart);
         }
 
         private BindingList<CartItemDisplayModel> _cart = new BindingList<CartItemDisplayModel>();
+
+        private async Task ResetSalesViewModel()
+        {
+            Cart = new BindingList<CartItemDisplayModel>();
+            //TODO: Make sure selected cart item is cleared
+            await LoadProducts();
+
+            NotifyOfPropertyChange(() => SubTotal);
+            NotifyOfPropertyChange(() => Tax);
+            NotifyOfPropertyChange(() => Total);
+            NotifyOfPropertyChange(() => CanCheckout);
+        }
 
         public BindingList<CartItemDisplayModel> Cart
         {
@@ -245,6 +259,9 @@ namespace TRMDesktopUI.ViewModels
             }
 
             await _saleEndpoint.PostSale(saleModel);
+
+            await ResetSalesViewModel();
+
         }
 
     }
