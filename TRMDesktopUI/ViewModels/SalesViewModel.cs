@@ -1,4 +1,5 @@
-﻿using Caliburn.Micro;
+﻿using AutoMapper;
+using Caliburn.Micro;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 using TRMDesktopUI.Library.Api;
 using TRMDesktopUI.Library.Helpers;
 using TRMDesktopUI.Library.Models;
+using TRMDesktopUI.Models;
 
 namespace TRMDesktopUI.ViewModels
 {
@@ -16,12 +18,15 @@ namespace TRMDesktopUI.ViewModels
         IProductEndpoint _productEndpoint;
         IConfigHelper _configHelper;
         ISaleEndpoint _saleEndpoint;
+        IMapper _mapper;
 
-        public SalesViewModel(IProductEndpoint productEnpoint, IConfigHelper configHelper, ISaleEndpoint saleEndpoint)
+        public SalesViewModel(IProductEndpoint productEnpoint, IConfigHelper configHelper,
+            ISaleEndpoint saleEndpoint, IMapper mapper)
         {
             _productEndpoint = productEnpoint;
             _configHelper = configHelper;
             _saleEndpoint = saleEndpoint;
+            _mapper = mapper;
             _taxRate = _configHelper.GetTaxRate() / 100;
         }
 
@@ -34,12 +39,13 @@ namespace TRMDesktopUI.ViewModels
         private async Task LoadProducts()
         {
             var productList = await _productEndpoint.GetAll();
-            Products = new BindingList<ProductModel>(productList);
+            var products = _mapper.Map<List<ProductDisplayModel>>(productList);
+            Products = new BindingList<ProductDisplayModel>(products);
         }
 
-        private BindingList<ProductModel> _products;
+        private BindingList<ProductDisplayModel> _products;
 
-        public BindingList<ProductModel> Products
+        public BindingList<ProductDisplayModel> Products
         {
             get { return _products; }
             set
@@ -49,9 +55,9 @@ namespace TRMDesktopUI.ViewModels
             }
         }
 
-        private ProductModel _selectedProduct;
+        private ProductDisplayModel _selectedProduct;
 
-        public ProductModel SelectedProduct
+        public ProductDisplayModel SelectedProduct
         {
             get { return _selectedProduct; }
             set
@@ -95,19 +101,14 @@ namespace TRMDesktopUI.ViewModels
         }
         public void AddToCart()
         {
-            CartItemModel existingItem = Cart.FirstOrDefault(x => x.Product == SelectedProduct);
+            CartItemDisplayModel existingItem = Cart.FirstOrDefault(x => x.Product == SelectedProduct);
             if (existingItem != null)
             {
                 existingItem.QtyInCart += ItemQuantity;
-
-                // HACK: Seems like there should be a better way
-                Cart.Remove(existingItem);
-                Cart.Add(existingItem);
-
             }
             else
             {
-                Cart.Add(new CartItemModel()
+                Cart.Add(new CartItemDisplayModel()
                 {
                     Product = SelectedProduct,
                     QtyInCart = ItemQuantity,
@@ -142,9 +143,9 @@ namespace TRMDesktopUI.ViewModels
             NotifyOfPropertyChange(() => CanCheckout);
         }
 
-        private BindingList<CartItemModel> _cart = new BindingList<CartItemModel>();
+        private BindingList<CartItemDisplayModel> _cart = new BindingList<CartItemDisplayModel>();
 
-        public BindingList<CartItemModel> Cart
+        public BindingList<CartItemDisplayModel> Cart
         {
             get { return _cart; }
             set
@@ -159,7 +160,7 @@ namespace TRMDesktopUI.ViewModels
         {
             _subtotal = 0;
             _tax = 0;
-            foreach (CartItemModel item in Cart)
+            foreach (CartItemDisplayModel item in Cart)
             {
                 _subtotal += item.Product.RetailPrice * item.QtyInCart;
                 if (item.Product.IsTaxable)
@@ -217,7 +218,7 @@ namespace TRMDesktopUI.ViewModels
         {
             // Create SaleModel and post to API
             SaleModel saleModel = new SaleModel();
-            foreach (CartItemModel cartItem in Cart)
+            foreach (CartItemDisplayModel cartItem in Cart)
             {
                 saleModel.SaleDetails.Add(
                     new SaleDetailModel()
