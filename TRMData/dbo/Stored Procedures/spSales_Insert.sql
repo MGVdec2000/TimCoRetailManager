@@ -10,7 +10,8 @@ BEGIN
 	SET NOCOUNT ON;
 
 	INSERT INTO dbo.Sales(CashierId, SaleDate, SubTotal, Tax, Total)
-	OUTPUT INSERTED.Id
 	VALUES(@CashierId, @SaleDate, @SubTotal, @Tax, @Total);
+
+	SELECT @@IDENTITY AS 'Identity';
 
 END
