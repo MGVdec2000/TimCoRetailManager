@@ -51,32 +51,18 @@ namespace TRMDataManager.Library.Internal.DataAccess
 
         public void CommitTransaction()
         {
-            try
-            {
-                _transaction?.Commit();
-            }
-            catch (InvalidOperationException ex)
-            {
-                // This is the expected message if the transaction was already commited or rolled back
-                if (ex.Message != "This SqlTransaction has completed; it is no longer usable.")
-                {
-                    // Otherwise, re-throw the exception
-                    throw;
-                }
-            }
-            if (_connection.State != ConnectionState.Closed)
-            {
-                _connection?.Close();
-            }
+            _transaction?.Commit();
+            _transaction = null;
+            _connection?.Close();
+            _connection = null;
         }
 
         public void RollbackTransaction()
         {
             _transaction?.Rollback();
-            if (_connection.State != ConnectionState.Closed)
-            {
-                _connection?.Close();
-            }
+            _transaction = null;
+            _connection?.Close();
+            _connection = null;
         }
 
         public void Dispose()
@@ -95,11 +81,5 @@ namespace TRMDataManager.Library.Internal.DataAccess
 
             return rows;
         }
-
-        // Open Connection/Start Transaction
-        // Load using the transaction
-        // Save using the transaction
-        // Complete transaction/Close connection
-        // Dispose
     }
 }
