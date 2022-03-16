@@ -49,7 +49,7 @@ namespace TRMDataManager.Library.DataAccess
                 CashierId = cashierId,
             };
             sale.Total = sale.SubTotal + sale.Tax;
-            
+
             using (SqlDataAccess sql = new SqlDataAccess())
             {
                 try
@@ -73,6 +73,13 @@ namespace TRMDataManager.Library.DataAccess
                     throw;
                 }
             }
+        }
+
+        public List<SalesReportModel> GetsSalesReport()
+        {
+            SqlDataAccess sql = new SqlDataAccess();
+
+            return sql.LoadData<SalesReportModel, dynamic>("dbo.spSales_Report", new { }, "TRMData");
         }
     }
 }
