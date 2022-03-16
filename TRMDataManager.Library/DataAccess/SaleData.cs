@@ -49,19 +49,28 @@ namespace TRMDataManager.Library.DataAccess
                 CashierId = cashierId,
             };
             sale.Total = sale.SubTotal + sale.Tax;
-
-            // Save SaleModel
-            SqlDataAccess sql = new SqlDataAccess();
-            sale.Id = sql.SaveDataReturnId<SaleDbModel>("dbo.spSales_Insert", sale, "TRMData");
-
-            // Finish filling in SaleDetailModels
-            foreach (var item in details)
+            
+            using (SqlDataAccess sql = new SqlDataAccess())
             {
-                item.SaleId = sale.Id;
-                // Save SaleDetailModels
-                sql.SaveData("dbo.spSaleDetails_Insert", item, "TRMData");
-            }
+                try
+                {
+                    sql.StartTransaction("TRMData");
 
+                    sale.Id = sql.SaveDataInTransaction("dbo.spSales_Insert", sale);
+
+                    foreach (var item in details)
+                    {
+                        item.SaleId = sale.Id;
+                        // Save SaleDetailModels
+                        sql.SaveDataInTransaction("dbo.spSaleDetails_Insert", item);
+                    }
+                }
+                catch
+                {
+                    sql.RollbackTransaction();
+                    throw;
+                }
+            }
         }
     }
 }
